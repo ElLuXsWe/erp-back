@@ -1,74 +1,106 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy Node.js app to Azure Web App - ApiErp
+name: CI/CD - ERP Backend
 
 on:
   push:
     branches:
-      - main
+      - '**'
   workflow_dispatch:
 
 jobs:
-  build:
+  backend-tests:
+    name: Backend - Pruebas unitarias y cobertura
     runs-on: ubuntu-latest
-    permissions:
-      contents: read #This is required for actions/checkout
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v3
 
+      - name: Cachear dependencias backend
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-backend-${{ hashFiles('package-lock.json') }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - run: npm install
+
+      - name: Verificar y ejecutar Jest
+        run: |
+          ls -l node_modules/.bin/jest
+          chmod +x node_modules/.bin/jest
+          ./node_modules/.bin/jest --coverage
+
+  build-and-deploy:
+    name: Build y despliegue a Azure Web App
+    runs-on: ubuntu-latest
+    needs: backend-tests
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: 'Production'
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
+      - name: Setup Node.js v22.x (para build y deploy)
         uses: actions/setup-node@v3
         with:
           node-version: '22.x'
 
-      - name: npm install, build, and test
-        run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+      - name: Instalar dependencias
+        run: npm install
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+      - name: Build (si aplica)
+        run: npm run build --if-present
 
-      - name: Upload artifact for deployment job
+      - name: Test (si quieres repetir test en build, opcional)
+        run: npm run test --if-present
+
+      - name: Empaquetar artefacto para despliegue
+        run: zip -r release.zip .
+
+      - name: Subir artefacto para deploy
         uses: actions/upload-artifact@v4
         with:
           name: node-app
           path: release.zip
 
   deploy:
+    name: Desplegar en Azure Web App
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-and-deploy
+    if: github.ref == 'refs/heads/main'
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
-
+      id-token: write
+      contents: read
     steps:
-      - name: Download artifact from build job
+      - name: Descargar artefacto
         uses: actions/download-artifact@v4
         with:
           name: node-app
 
-      - name: Unzip artifact for deployment
+      - name: Descomprimir artefacto
         run: unzip release.zip
-      
-      - name: Login to Azure
+
+      - name: Login en Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_18092DB78E4F48B1A46793E333921C9E }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3E1B5DC0C2CF4760BE4111FFE78F137A }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1BA36FE0F1CF45BF8DC2FD77337DF33F }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Desplegar en Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'ApiErp'
           slot-name: 'Production'
           package: .
-          
