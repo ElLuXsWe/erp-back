@@ -76,11 +76,11 @@ jobs:
   backend-tests:
     runs-on: ubuntu-latest
     env:
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASS: ${{ secrets.DB_PASS }}
-      DB_NAME: ${{ secrets.DB_NAME }}
-      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_HOST: bderp.postgres.database.azure.com
+      DB_USER: Admin1
+      DB_PASS: Naranjalimon1
+      DB_NAME: postgres
+      DB_PORT: 5432
     steps:
       - uses: actions/checkout@v3
 
