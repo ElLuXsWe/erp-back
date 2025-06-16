@@ -73,6 +73,14 @@ jobs:
           slot-name: 'Production'
           package: .
           jobs:
+          - name: Verificar variables de entorno
+  run: |
+    echo "HOST: $DB_HOST"
+    echo "USER: $DB_USER"
+  env:
+    DB_HOST: ${{ secrets.DB_HOST }}
+    DB_USER: ${{ secrets.DB_USER }}
+
   backend-tests:
     runs-on: ubuntu-latest
     env:
