@@ -22,7 +22,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/usuarios', usuarioRoutes);
 app.use('/proyectos', proyectoRoutes);
 app.use('/tareas', tareaRoutes);  // Añadir la ruta para tareas
-
+app.get('/api/ping', (req, res) => {
+  res.json({ message: 'API funcionando correctamente!' });
+});
 // Inicializar el servidor
 const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
