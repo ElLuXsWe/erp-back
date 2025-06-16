@@ -4,13 +4,19 @@ const createSequelizeConnection = async (Luser, Lpass) => {
   console.log('user',Luser)
   console.log('pass',Lpass)
   const sequelize = new Sequelize({
-    host: process.env.DB_HOST,
+    host: 'bderp.postgres.database.azure.com',
     dialect: 'postgres',
-    port: process.env.DB_PORT,
-   database: 'erpadmproyectos',// Nombre de la base de datos a la que deseas conectarte
+    port: '5432',
+   database: 'postgres',// Nombre de la base de datos a la que deseas conectarte
     username: Luser,       // El nombre de usuario de la base de datos
     password: Lpass, 
     logging: false,
+      dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false // Azure usa certificados autofirmados, así que esto evita problemas
+    }
+  },
     pool: {
       max: 5,       // Máximo 5 conexiones simultáneas
       min: 0,       // Mínimo 0 conexiones (libera recursos cuando no se usan)
@@ -21,6 +27,7 @@ const createSequelizeConnection = async (Luser, Lpass) => {
 
   try {
     await sequelize.authenticate();
+    console.log(process.env.DB_PORT)
     console.log('✅ Conexión exitosa a la base de datos.');
     return sequelize;
   } catch (error) {
