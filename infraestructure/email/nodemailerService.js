@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
     pass: 'mssp.xHgotVI.ynrw7gy03kjl2k8e.8SLFQDa'
   }
 });
-
+ 
 
 const enviarCodigoPorCorreo = async (destinatario, codigo) => {
   await transporter.sendMail({
