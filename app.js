@@ -5,8 +5,6 @@ const usuarioRoutes = require('./routes/usuarios');
 const proyectoRoutes = require('./routes/proyectos');
 const tareaRoutes = require('./routes/tareas');  // Añadir la ruta para tareas
 
-// Configuración de CORS
-const cors = require('cors');
 
 app.use(cors({
   origin: 'http://localhost:3000',
