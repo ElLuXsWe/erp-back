@@ -3,7 +3,7 @@ const router = express.Router();
 const usuarioController = require('../controllers/usuarioController');
 router.post('/crearUsuario', usuarioController.crearUsuarioController);
 router.patch('/editarUsuario', usuarioController.editarUsuarioController);
-router.post('/login', (req, res) => {
+router.POST('/login', (req, res) => {
   res.send('LOGIN FUNCIONANDO');
 });
 router.post('/usuarios', usuarioController.obtenerUsuariosController);
