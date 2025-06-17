@@ -1,0 +1,25 @@
+# Backend ERP - API
+
+## Descripción
+
+Este es el backend del sistema ERP desarrollado con Node.js y Express, siguiendo una arquitectura limpia y buenas prácticas de desarrollo.  
+Incluye autenticación JWT, manejo de roles, y conexión a base de datos PostgreSQL alojada en Azure.
+
+---
+
+## Requisitos previos
+
+- Node.js v18 o superior  
+- PostgreSQL (puede ser local o en Azure)  
+- Docker (opcional para despliegue local en contenedor)  
+- Cuenta Azure para despliegue en la nube  
+
+---
+
+## Levantar proyecto localmente
+
+1. Clonar el repositorio
+https://github.com/ElLuXsWe/erp-back
+   ```bash
+   git clone 
+   cd backend
