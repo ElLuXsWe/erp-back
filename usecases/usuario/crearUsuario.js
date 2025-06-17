@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { createUserModel, crearUsuarioDB } = require('../../models/usuario');
 const crearUsuario = async (datosUsuario) => {
   const { Luser, Lpass, nombre, email, pass, rol, creado_por, imagen } = datosUsuario;

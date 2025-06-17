@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const obtenerUsuarios = require('../usecases/usuario/obtenerUsuario');
 const { loginUsuario } = require('../usecases/usuario/loginUsuario');
 const { verificarCodigo } = require('../usecases/usuario/verificarCodigo');
