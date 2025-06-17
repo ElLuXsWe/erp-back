@@ -1,12 +1,18 @@
 
+jest.mock('bcrypt', () => ({
+  hash: jest.fn(() => 'hash123'),
+  compare: jest.fn(() => true),
+}));
+
 jest.mock('../usecases/usuario/crearUsuario', () => jest.fn());
 jest.mock('../usecases/usuario/editarUsuario', () => jest.fn());
 jest.mock('../usecases/usuario/obtenerUsuario', () => jest.fn());
 
-// Importación corregida
+// Importaciones
 const crearUsuarioUseCase = require('../usecases/usuario/crearUsuario');
 const editarUsuarioUseCase = require('../usecases/usuario/editarUsuario');
 const obtenerUsuarios = require('../usecases/usuario/obtenerUsuario');
+
 const {
   crearUsuarioController,
   editarUsuarioController,
