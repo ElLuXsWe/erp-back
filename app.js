@@ -5,13 +5,24 @@ const usuarioRoutes = require('./routes/usuarios');
 const proyectoRoutes = require('./routes/proyectos');
 const tareaRoutes = require('./routes/tareas');  // Añadir la ruta para tareas
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://erp-front.azurewebsites.net'
+];
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Lpass', 'Lemail'],
   credentials: true
 }));
+
 
 app.options('*', cors()); // manejo de preflight
 
