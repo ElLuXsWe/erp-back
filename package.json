@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "postinstall": "npm rebuild bcrypt --build-from-source",
     "start": "node app.js",
     "build": "echo 'no build step for backend'",
     "test": "jest",

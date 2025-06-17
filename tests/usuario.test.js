@@ -1,5 +1,4 @@
-
-jest.mock('bcrypt', () => ({
+jest.mock('bcryptjs', () => ({
   hash: jest.fn(() => 'hash123'),
   compare: jest.fn(() => true),
 }));
