@@ -89,13 +89,9 @@ const crearUsuarioDB = async (dbUser, dbPassword, usuarioData) => {
     await sequelize.query(`GRANT CONNECT ON DATABASE postgres TO "${email}";`);
     await sequelize.query(`GRANT USAGE ON SCHEMA public TO "${email}";`);
     await sequelize.query(`GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO "${email}";`);
-    await sequelize.query(`ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "${email}";`);
     await sequelize.query(`GRANT CREATE ON SCHEMA public TO "${email}";`);
     await sequelize.query(`GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO "${email}";`);
     await sequelize.query(`GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO "${email}";`);
-    await sequelize.query(`ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO "${email}";`);
-    await sequelize.query(`ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE ON SEQUENCES TO "${email}";`);
-
     console.log(`Permisos otorgados al rol "${email}".`);
   } catch (error) {
     console.error('Error al crear o actualizar el usuario en PostgreSQL:', error);
