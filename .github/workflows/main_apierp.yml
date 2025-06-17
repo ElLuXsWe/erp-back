@@ -25,16 +25,16 @@ jobs:
           npm ci
           npx jest --coverage
 
-      - name: Reconstruir entorno para producción
+      - name: Preparar entorno para producción (sin devDependencies)
         run: |
-          rm -rf node_modules package-lock.json
+          rm -rf node_modules
           npm ci --omit=dev
           npm rebuild bcrypt --build-from-source
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+      - name: Crear archivo ZIP para despliegue
+        run: zip -r release.zip ./*
 
-      - name: Upload artifact for deployment job
+      - name: Subir artefacto para el job de despliegue
         uses: actions/upload-artifact@v4
         with:
           name: node-app
@@ -51,22 +51,22 @@ jobs:
       contents: read
 
     steps:
-      - name: Download artifact from build job
+      - name: Descargar artefacto del job de build
         uses: actions/download-artifact@v4
         with:
           name: node-app
 
-      - name: Unzip artifact
+      - name: Descomprimir artefacto
         run: unzip release.zip
 
-      - name: Login to Azure
+      - name: Iniciar sesión en Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_18092DB78E4F48B1A46793E333921C9E }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3E1B5DC0C2CF4760BE4111FFE78F137A }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1BA36FE0F1CF45BF8DC2FD77337DF33F }}
 
-      - name: Deploy to Azure Web App
+      - name: Desplegar a Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
