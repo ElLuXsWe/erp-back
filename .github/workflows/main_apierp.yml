@@ -15,24 +15,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '22.x'
 
-      - name: Instalar dependencias y compilar
+      - name: Instalar dependencias y ejecutar pruebas con cobertura
         run: |
-          npm ci --omit=dev
-          npm rebuild bcrypt --build-from-source
-          npm run build --if-present
-
-      - name: Ejecutar pruebas con cobertura
-        run: |
-          chmod +x ./node_modules/.bin/jest
+          npm ci
           npx jest --coverage
 
+      - name: Reconstruir entorno para producción
+        run: |
+          rm -rf node_modules package-lock.json
+          npm ci --omit=dev
+          npm rebuild bcrypt --build-from-source
+
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r -x "node_modules/**/test/**"
+        run: zip release.zip ./* -r
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -56,7 +56,7 @@ jobs:
         with:
           name: node-app
 
-      - name: Unzip artifact for deployment
+      - name: Unzip artifact
         run: unzip release.zip
 
       - name: Login to Azure
@@ -82,6 +82,7 @@ jobs:
       DB_PASS: Naranjalimon1
       DB_NAME: postgres
       DB_PORT: 5432
+
     steps:
       - uses: actions/checkout@v3
 
@@ -90,7 +91,8 @@ jobs:
         with:
           node-version: '18'
 
-      - run: npm install
+      - name: Instalar dependencias
+        run: npm install
 
       - name: Probar conexión a la base de datos
         run: node test-db-connection.js
