@@ -2,16 +2,15 @@ trigger:
 - main
 
 pool:
-  name: 'Default'  # Asegúrate que es el nombre correcto de tu agente self-hosted
+  name: 'Default'
 
 variables:
   appName: 'ApiErp'
 
 stages:
 
-# -------- STAGE BUILD --------
 - stage: Build
-  displayName: 'Build Stage'
+  displayName: 'Build'
   jobs:
   - job: BuildJob
     displayName: 'Build Job'
@@ -25,12 +24,10 @@ stages:
 
     - script: |
         npm ci
-        echo "Build completado"
       displayName: 'Instalar dependencias'
 
-# -------- STAGE TEST --------
 - stage: Test
-  displayName: 'Test Stage'
+  displayName: 'Test'
   dependsOn: Build
   jobs:
   - job: TestJob
@@ -48,9 +45,8 @@ stages:
         npx jest --coverage
       displayName: 'Ejecutar pruebas unitarias'
 
-# -------- STAGE DEPLOY --------
 - stage: Deploy
-  displayName: 'Deploy Stage'
+  displayName: 'Deploy'
   dependsOn: Test
   jobs:
   - job: DeployJob
@@ -63,16 +59,17 @@ stages:
         versionSpec: '22.x'
       displayName: 'Instalar Node.js'
 
-    # Empaquetar la aplicación
-    - script: |
-        echo "Empaquetando la aplicación..."
-        zip -r app.zip . -x "*.git*" "node_modules/*" "coverage/*"
+    - task: PowerShell@2
       displayName: 'Crear archivo ZIP'
-
-    # Tarea de deploy al App Service
-    - task: AzureWebApp@1
-      displayName: 'Desplegar a Azure Web App'
       inputs:
-        azureSubscription: 'back erp'   # Tu conexión de servicio en Azure DevOps
-        appName: 'ApiErp'               # Nombre exacto de tu App Service en Azure
-        package: '$(System.DefaultWorkingDirectory)/**/app.zip'  # Ruta al ZIP creado
+        targetType: 'inline'
+        script: |
+          Write-Host "Empaquetando la aplicación..."
+          Compress-Archive -Path * -DestinationPath app.zip -Force
+
+    - task: AzureWebApp@1
+      displayName: 'Deploy a Azure Web App'
+      inputs:
+        azureSubscription: 'back erp'
+        appName: 'ApiErp'
+        package: '$(System.DefaultWorkingDirectory)/app.zip'
