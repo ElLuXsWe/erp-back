@@ -2,13 +2,11 @@ trigger:
 - main
 
 pool:
-  vmImage: 'Default'
+  name: 'Default'  # Cambia si tu pool self-hosted tiene otro nombre
 
 variables:
   appName: 'ApiErp'
-  clientId: 'AZUREAPPSERVICE_CLIENTID_18092DB78E4F48B1A46793E333921C9E'
-  tenantId: 'AZUREAPPSERVICE_TENANTID_3E1B5DC0C2CF4760BE4111FFE78F137A'
-  subscriptionId: 'AZUREAPPSERVICE_SUBSCRIPTIONID_1BA36FE0F1CF45BF8DC2FD77337DF33F'
+  # Puedes eliminar clientId, tenantId y subscriptionId si no los usas explícitamente
 
 stages:
 
@@ -68,16 +66,10 @@ stages:
 
     - task: AzureCLI@2
       inputs:
-        azureSubscription: ''
+        azureSubscription: "back erp"  # El nombre de la conexión con espacio, entre comillas dobles
         scriptType: bash
         scriptLocation: inlineScript
         inlineScript: |
-          echo "Iniciando sesión en Azure..."
-          az login --service-principal -u $clientId -p $clientId --tenant $tenantId
-          
-          echo "Configurando suscripción..."
-          az account set --subscription $subscriptionId
-          
           echo "Desplegando a Azure Web App..."
           az webapp deployment source config-zip --resource-group Tu-ResourceGroup --name $appName --src $(System.DefaultWorkingDirectory)/$(Build.Repository.Name).zip
-      displayName: 'Login y Deploy a Azure Web App manual'
+      displayName: 'Deploy a Azure Web App'
