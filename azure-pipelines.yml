@@ -2,9 +2,74 @@ trigger:
 - main
 
 pool:
-  name: 'Default'
+  name: 'Default'  # Cambia si tu pool self-hosted tiene otro nombre
 
-jobs:
-- job: TestJob
-  steps:
-  - script: echo "Hola mundo desde Azure DevOps"
+variables:
+  appName: 'ApiErp'
+  # Puedes eliminar clientId, tenantId y subscriptionId si no los usas explícitamente
+
+stages:
+
+# -------- STAGE BUILD --------
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build Job'
+    steps:
+    - checkout: self
+
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '22.x'
+      displayName: 'Instalar Node.js'
+
+    - script: |
+        npm ci
+        echo "Build completado"
+      displayName: 'Instalar dependencias'
+
+# -------- STAGE TEST --------
+- stage: Test
+  displayName: 'Test Stage'
+  dependsOn: Build
+  jobs:
+  - job: TestJob
+    displayName: 'Test Job'
+    steps:
+    - checkout: self
+
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '22.x'
+      displayName: 'Instalar Node.js'
+
+    - script: |
+        npm ci
+        npx jest --coverage
+      displayName: 'Ejecutar pruebas unitarias'
+
+# -------- STAGE DEPLOY --------
+- stage: Deploy
+  displayName: 'Deploy Stage'
+  dependsOn: Test
+  jobs:
+  - job: DeployJob
+    displayName: 'Deploy Job'
+    steps:
+    - checkout: self
+
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '22.x'
+      displayName: 'Instalar Node.js'
+
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: "back erp"  # El nombre de la conexión con espacio, entre comillas dobles
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          echo "Desplegando a Azure Web App..."
+          az webapp deployment source config-zip --resource-group Tu-ResourceGroup --name $appName --src $(System.DefaultWorkingDirectory)/$(Build.Repository.Name).zip
+      displayName: 'Deploy a Azure Web App'
