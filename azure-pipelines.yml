@@ -1,0 +1,83 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  appName: 'ApiErp'
+  clientId: 'AZUREAPPSERVICE_CLIENTID_18092DB78E4F48B1A46793E333921C9E'
+  tenantId: 'AZUREAPPSERVICE_TENANTID_3E1B5DC0C2CF4760BE4111FFE78F137A'
+  subscriptionId: 'AZUREAPPSERVICE_SUBSCRIPTIONID_1BA36FE0F1CF45BF8DC2FD77337DF33F'
+
+stages:
+
+# -------- STAGE BUILD --------
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build Job'
+    steps:
+    - checkout: self
+
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '22.x'
+      displayName: 'Instalar Node.js'
+
+    - script: |
+        npm ci
+        echo "Build completado"
+      displayName: 'Instalar dependencias'
+
+# -------- STAGE TEST --------
+- stage: Test
+  displayName: 'Test Stage'
+  dependsOn: Build
+  jobs:
+  - job: TestJob
+    displayName: 'Test Job'
+    steps:
+    - checkout: self
+
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '22.x'
+      displayName: 'Instalar Node.js'
+
+    - script: |
+        npm ci
+        npx jest --coverage
+      displayName: 'Ejecutar pruebas unitarias'
+
+# -------- STAGE DEPLOY --------
+- stage: Deploy
+  displayName: 'Deploy Stage'
+  dependsOn: Test
+  jobs:
+  - job: DeployJob
+    displayName: 'Deploy Job'
+    steps:
+    - checkout: self
+
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '22.x'
+      displayName: 'Instalar Node.js'
+
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: ''
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          echo "Iniciando sesión en Azure..."
+          az login --service-principal -u $clientId -p $clientId --tenant $tenantId
+          
+          echo "Configurando suscripción..."
+          az account set --subscription $subscriptionId
+          
+          echo "Desplegando a Azure Web App..."
+          az webapp deployment source config-zip --resource-group Tu-ResourceGroup --name $appName --src $(System.DefaultWorkingDirectory)/$(Build.Repository.Name).zip
+      displayName: 'Login y Deploy a Azure Web App manual'
