@@ -2,11 +2,10 @@ trigger:
 - main
 
 pool:
-  name: 'Default'  # Cambia si tu pool self-hosted tiene otro nombre
+  name: 'Default'  # Asegúrate que es el nombre correcto de tu agente self-hosted
 
 variables:
   appName: 'ApiErp'
-  # Puedes eliminar clientId, tenantId y subscriptionId si no los usas explícitamente
 
 stages:
 
@@ -64,12 +63,16 @@ stages:
         versionSpec: '22.x'
       displayName: 'Instalar Node.js'
 
-    - task: AzureCLI@2
+    # Empaquetar la aplicación
+    - script: |
+        echo "Empaquetando la aplicación..."
+        zip -r app.zip . -x "*.git*" "node_modules/*" "coverage/*"
+      displayName: 'Crear archivo ZIP'
+
+    # Tarea de deploy al App Service
+    - task: AzureWebApp@1
+      displayName: 'Desplegar a Azure Web App'
       inputs:
-        azureSubscription: "back erp"  # El nombre de la conexión con espacio, entre comillas dobles
-        scriptType: bash
-        scriptLocation: inlineScript
-        inlineScript: |
-          echo "Desplegando a Azure Web App..."
-          az webapp deployment source config-zip --resource-group Tu-ResourceGroup --name $appName --src $(System.DefaultWorkingDirectory)/$(Build.Repository.Name).zip
-      displayName: 'Deploy a Azure Web App'
+        azureSubscription: 'back erp'   # Tu conexión de servicio en Azure DevOps
+        appName: 'ApiErp'               # Nombre exacto de tu App Service en Azure
+        package: '$(System.DefaultWorkingDirectory)/**/app.zip'  # Ruta al ZIP creado
