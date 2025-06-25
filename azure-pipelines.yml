@@ -8,12 +8,9 @@ variables:
   appName: 'ApiErp'
 
 stages:
-
 - stage: Build
-  displayName: 'Build'
   jobs:
   - job: BuildJob
-    displayName: 'Build Job'
     steps:
     - checkout: self
 
@@ -27,11 +24,9 @@ stages:
       displayName: 'Instalar dependencias'
 
 - stage: Test
-  displayName: 'Test'
   dependsOn: Build
   jobs:
   - job: TestJob
-    displayName: 'Test Job'
     steps:
     - checkout: self
 
@@ -43,33 +38,39 @@ stages:
     - script: |
         npm ci
         npx jest --coverage
-      displayName: 'Ejecutar pruebas unitarias'
+      displayName: 'Pruebas unitarias'
 
 - stage: Deploy
-  displayName: 'Deploy'
   dependsOn: Test
   jobs:
   - job: DeployJob
-    displayName: 'Deploy Job'
     steps:
     - checkout: self
 
-    - task: NodeTool@0
+    - task: DeleteFiles@1
+      displayName: 'Eliminar archivos innecesarios'
       inputs:
-        versionSpec: '22.x'
-      displayName: 'Instalar Node.js'
+        SourceFolder: '$(System.DefaultWorkingDirectory)'
+        Contents: |
+          node_modules
+          **/tests
+          **/cypress
+          **/coverage
+          **/.git
 
-    - task: PowerShell@2
+    - task: ArchiveFiles@2
       displayName: 'Crear archivo ZIP'
       inputs:
-        targetType: 'inline'
-        script: |
-          Write-Host "Empaquetando la aplicación..."
-          Compress-Archive -Path * -DestinationPath app.zip -Force
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
+        replaceExistingArchive: true
 
     - task: AzureWebApp@1
       displayName: 'Deploy a Azure Web App'
       inputs:
         azureSubscription: 'back erp'
+        appType: 'webApp'
         appName: 'ApiErp'
-        package: '$(System.DefaultWorkingDirectory)/app.zip'
+        package: '$(Build.ArtifactStagingDirectory)/app.zip'
